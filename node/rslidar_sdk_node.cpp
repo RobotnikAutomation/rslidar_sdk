@@ -56,9 +56,11 @@ int main(int argc, char** argv)
 
   std::shared_ptr<AdapterManager> demo_ptr = std::make_shared<AdapterManager>();
   YAML::Node config;
+  std::string rslidar_config_file = (std::string)PROJECT_PATH + "/config/config.yaml";
+  ros::param::get("rslidar_config_file", rslidar_config_file);
   try
   {
-    config = YAML::LoadFile((std::string)PROJECT_PATH + "/config/config.yaml");
+    config = YAML::LoadFile(rslidar_config_file);
   }
   catch (...)
   {
