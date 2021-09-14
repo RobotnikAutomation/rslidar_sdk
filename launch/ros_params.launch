@@ -1,0 +1,18 @@
+<launch>
+  <arg name="lidar_type" default="RSBP"/>
+  <arg name="frame_id" default="/rslidar"/>
+  <arg name="msop_port" default="6699"/>
+  <arg name="difop_port" default="7788"/>
+  <arg name="start_angle" default="0"/>
+  <arg name="end_angle" default="360"/>
+  <arg name="min_distance" default="0.2"/>
+  <arg name="max_distance" default="360"/>
+
+  <arg name="output_topic" default="points"/>
+
+  <node pkg="rslidar_sdk" name="rslidar_sdk_node" type="rslidar_sdk_node" output="screen">
+    <rosparam command="load" file="$(find rslidar_sdk)/config/ros_params.yaml" subst_value="true"/>
+    <param name="read_ros_params" value="true" />
+
+  </node>
+</launch>
