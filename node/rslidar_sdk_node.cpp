@@ -66,10 +66,61 @@ int main(int argc, char** argv)
 
   YAML::Node config;
   std::string rslidar_config_file = (std::string)PROJECT_PATH + "/config/config.yaml";
-  ros::param::get("rslidar_config_file", rslidar_config_file);
+  if (ros::param::has("rslidar_config_file"))
+    ros::param::get("rslidar_config_file", rslidar_config_file);
+  RS_WARNING << "Using configuration file in the directory: " << rslidar_config_file <<"." << RS_REND;
+  std::string frame_id = "";
+  if (ros::param::has("frame_id"))
+    ros::param::get("frame_id", frame_id);
+
+  std::string ros_send_point_cloud_topic = "";
+  if (ros::param::has("ros_send_point_cloud_topic"))
+    ros::param::get("ros_send_point_cloud_topic", ros_send_point_cloud_topic);
+
+  std::string lidar_type = "";
+  if (ros::param::has("lidar_type"))
+    ros::param::get("lidar_type", lidar_type);
+
+  int msop_port = -1;
+  if (ros::param::has("msop_port"))
+    ros::param::get("msop_port", msop_port);
+
+  int difop_port = -1;
+  if (ros::param::has("difop_port"))
+    ros::param::get("difop_port", difop_port);
+
   try
   {
     config = YAML::LoadFile(rslidar_config_file);
+    for (auto i : config["lidar"])
+    {
+      if(ros_send_point_cloud_topic != "")
+      {
+        RS_INFO << "Using ros_send_point_cloud_topic: " << ros_send_point_cloud_topic << RS_REND;
+        i["ros"]["ros_send_point_cloud_topic"] = ros_send_point_cloud_topic;
+      }
+      if(frame_id != "")
+      {
+        RS_INFO << "Using frame_id: " << frame_id << RS_REND;
+        i["driver"]["frame_id"] = frame_id;
+      }
+      if (lidar_type != "")
+      {
+        RS_INFO << "Using lidar_type: " << lidar_type << RS_REND;
+        i["driver"]["lidar_type"] = lidar_type;
+      }
+      if (msop_port != -1)
+      {
+        RS_INFO << "Using msop_port: " << msop_port << RS_REND;
+        i["driver"]["msop_port"] = msop_port;
+      }
+      if (difop_port != -1)
+      {
+        RS_INFO << "Using difop_port: " << difop_port << RS_REND;
+        i["driver"]["difop_port"] = difop_port;
+      }
+    }
+    
   }
   catch (...)
   {
