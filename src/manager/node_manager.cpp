@@ -135,6 +135,103 @@ void NodeManager::init(const YAML::Node& config)
     sources_.emplace_back(source);
   }
 }
+#if ROS_FOUND
+void NodeManager::init(const YAML::Node& config, ros::NodeHandle& phn)
+{
+  YAML::Node common_config = yamlSubNodeAbort(config, "common");
+
+  int msg_source = 0;
+  yamlRead<int>(common_config, "msg_source", msg_source, 0);
+
+  bool send_packet_ros;
+  yamlRead<bool>(common_config, "send_packet_ros", send_packet_ros, false);
+
+  bool send_point_cloud_ros;
+  yamlRead<bool>(common_config, "send_point_cloud_ros", send_point_cloud_ros, false);
+
+  bool send_point_cloud_proto;
+  yamlRead<bool>(common_config, "send_point_cloud_proto", send_point_cloud_proto, false);
+
+  bool send_packet_proto;
+  yamlRead<bool>(common_config, "send_packet_proto", send_packet_proto, false);
+
+  YAML::Node lidar_config = yamlSubNodeAbort(config, "lidar");
+
+  for (uint8_t i = 0; i < lidar_config.size(); ++i)
+  {
+    std::shared_ptr<Source> source;
+
+    switch (msg_source)
+    {
+      case SourceType::MSG_FROM_LIDAR:  // online lidar
+
+        RS_INFO << "------------------------------------------------------" << RS_REND;
+        RS_INFO << "Receive Packets From : Online LiDAR" << RS_REND;
+        RS_INFO << "Msop Port: " << lidar_config[i]["driver"]["msop_port"].as<uint16_t>() << RS_REND;
+        RS_INFO << "Difop Port: " << lidar_config[i]["driver"]["difop_port"].as<uint16_t>() << RS_REND;
+        RS_INFO << "------------------------------------------------------" << RS_REND;
+
+        source = std::make_shared<SourceDriver>(SourceType::MSG_FROM_LIDAR);
+        source->init(lidar_config[i]);
+        break;
+
+      case SourceType::MSG_FROM_ROS_PACKET:  // pkt from ros
+
+        RS_INFO << "------------------------------------------------------" << RS_REND;
+        RS_INFO << "Receive Packets From : ROS" << RS_REND;
+        RS_INFO << "Msop Topic: " << lidar_config[i]["ros"]["ros_recv_packet_topic"].as<std::string>() << RS_REND;
+        RS_INFO << "------------------------------------------------------" << RS_REND;
+
+        source = std::make_shared<SourcePacketRos>();
+        source->init(lidar_config[i]);
+        break;
+
+      case SourceType::MSG_FROM_PCAP:  // pcap
+
+        RS_INFO << "------------------------------------------------------" << RS_REND;
+        RS_INFO << "Receive Packets From : Pcap" << RS_REND;
+        RS_INFO << "Msop Port: " << lidar_config[i]["driver"]["msop_port"].as<uint16_t>() << RS_REND;
+        RS_INFO << "Difop Port: " << lidar_config[i]["driver"]["difop_port"].as<uint16_t>() << RS_REND;
+        RS_INFO << "------------------------------------------------------" << RS_REND;
+
+        source = std::make_shared<SourceDriver>(SourceType::MSG_FROM_PCAP);
+        source->init(lidar_config[i]);
+        break;
+
+      default:
+        RS_ERROR << "Unsupported LiDAR message source:" << msg_source << "." << RS_REND;
+        exit(-1);
+    }
+
+    if (send_packet_ros)
+    {
+      RS_DEBUG << "------------------------------------------------------" << RS_REND;
+      RS_DEBUG << "Send Packets To : ROS" << RS_REND;
+      RS_DEBUG << "Msop Topic: " << lidar_config[i]["ros"]["ros_send_packet_topic"].as<std::string>() << RS_REND;
+      RS_DEBUG << "------------------------------------------------------" << RS_REND;
+
+      std::shared_ptr<DestinationPacket> dst = std::make_shared<DestinationPacketRos>();
+      dst->init(lidar_config[i]);
+      source->regPacketCallback(dst);
+    }
+
+    if (send_point_cloud_ros)
+    {
+      RS_DEBUG << "------------------------------------------------------" << RS_REND;
+      RS_DEBUG << "Send PointCloud To : ROS" << RS_REND;
+      RS_DEBUG << "PointCloud Topic: " << lidar_config[i]["ros"]["ros_send_point_cloud_topic"].as<std::string>()
+               << RS_REND;
+      RS_DEBUG << "------------------------------------------------------" << RS_REND;
+
+      std::shared_ptr<DestinationPointCloud> dst = std::make_shared<DestinationPointCloudRos>();
+      dst->init(lidar_config[i], phn);
+      source->regPointCloudCallback(dst);
+    }
+
+    sources_.emplace_back(source);
+  }
+}
+#endif
 
 void NodeManager::start()
 {

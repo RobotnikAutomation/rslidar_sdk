@@ -54,6 +54,17 @@ inline sensor_msgs::PointCloud2 toRosMsg(const LidarPointCloudMsg& rs_msg, const
   ros_msg.fields.clear();
   ros_msg.fields.reserve(fields);
 
+  if (send_by_rows)
+  {
+    ros_msg.width = rs_msg.width; 
+    ros_msg.height = rs_msg.height; 
+  }
+  else
+  {
+    ros_msg.width = rs_msg.height; // exchange width and height to be compatible with pcl::PointCloud<>
+    ros_msg.height = rs_msg.width; 
+  }
+
   int offset = 0;
   offset = addPointField(ros_msg, "x", 1, sensor_msgs::PointField::FLOAT32, offset);
   offset = addPointField(ros_msg, "y", 1, sensor_msgs::PointField::FLOAT32, offset);
@@ -98,17 +109,17 @@ inline sensor_msgs::PointCloud2 toRosMsg(const LidarPointCloudMsg& rs_msg, const
         *iter_z_ = point.z;
         *iter_intensity_ = point.intensity;
 
-        iter_x_ = iter_x_ + 1;
-        iter_y_ = iter_y_ + 1;
-        iter_z_ = iter_z_ + 1;
-        iter_intensity_ = iter_intensity_ + 1;
+        ++iter_x_;
+        ++iter_y_;
+        ++iter_z_;
+        ++iter_intensity_;
 
 #ifdef POINT_TYPE_XYZIRT
         *iter_ring_ = point.ring;
         *iter_timestamp_ = point.timestamp;
 
-        iter_ring_ = iter_ring_ + 1;
-        iter_timestamp_ = iter_timestamp_ + 1;
+        ++iter_ring_;
+        ++iter_timestamp_;
 #endif
       }
     }
@@ -124,17 +135,17 @@ inline sensor_msgs::PointCloud2 toRosMsg(const LidarPointCloudMsg& rs_msg, const
       *iter_z_ = point.z;
       *iter_intensity_ = point.intensity;
 
-      iter_x_ = iter_x_ + 1;
-      iter_y_ = iter_y_ + 1;
-      iter_z_ = iter_z_ + 1;
-      iter_intensity_ = iter_intensity_ + 1;
+      ++iter_x_;
+      ++iter_y_;;
+      ++iter_z_;
+      ++iter_intensity_;
 
 #ifdef POINT_TYPE_XYZIRT
       *iter_ring_ = point.ring;
       *iter_timestamp_ = point.timestamp;
 
-      iter_ring_ = iter_ring_ + 1;
-      iter_timestamp_ = iter_timestamp_ + 1;
+      ++iter_ring_;
+      ++iter_timestamp_;
 #endif
     }
   }
@@ -151,6 +162,7 @@ class DestinationPointCloudRos : public DestinationPointCloud
 public:
 
   virtual void init(const YAML::Node& config);
+  virtual void init(const YAML::Node& config, ros::NodeHandle& pnh);
   virtual void sendPointCloud(const LidarPointCloudMsg& msg);
   virtual ~DestinationPointCloudRos() = default;
 
@@ -180,6 +192,26 @@ inline void DestinationPointCloudRos::init(const YAML::Node& config)
 
   nh_ = std::unique_ptr<ros::NodeHandle>(new ros::NodeHandle());
   pub_ = nh_->advertise<sensor_msgs::PointCloud2>(ros_send_topic, 10);
+}
+
+inline void DestinationPointCloudRos::init(const YAML::Node& config, ros::NodeHandle& pnh)
+{
+  yamlRead<bool>(config["ros"], 
+      "ros_send_by_rows", send_by_rows_, false);
+
+  bool dense_points;
+  yamlRead<bool>(config["driver"], "dense_points", dense_points, false);
+  if (dense_points)
+    send_by_rows_ = false;
+
+  yamlRead<std::string>(config["ros"], 
+      "ros_frame_id", frame_id_, "rslidar");
+
+  std::string ros_send_topic;
+  yamlRead<std::string>(config["ros"], 
+      "ros_send_point_cloud_topic", ros_send_topic, "rslidar_points");
+
+  pub_ = pnh.advertise<sensor_msgs::PointCloud2>(ros_send_topic, 10);
 }
 
 inline void DestinationPointCloudRos::sendPointCloud(const LidarPointCloudMsg& msg)
@@ -212,6 +244,17 @@ inline sensor_msgs::msg::PointCloud2 toRosMsg(const LidarPointCloudMsg& rs_msg, 
 #endif
   ros_msg.fields.clear();
   ros_msg.fields.reserve(fields);
+
+  if (send_by_rows)
+  {
+    ros_msg.width = rs_msg.width; 
+    ros_msg.height = rs_msg.height; 
+  }
+  else
+  {
+    ros_msg.width = rs_msg.height; // exchange width and height to be compatible with pcl::PointCloud<>
+    ros_msg.height = rs_msg.width; 
+  }
 
   int offset = 0;
   offset = addPointField(ros_msg, "x", 1, sensor_msgs::msg::PointField::FLOAT32, offset);
@@ -258,17 +301,17 @@ inline sensor_msgs::msg::PointCloud2 toRosMsg(const LidarPointCloudMsg& rs_msg, 
         *iter_z_ = point.z;
         *iter_intensity_ = point.intensity;
 
-        iter_x_ = iter_x_ + 1;
-        iter_y_ = iter_y_ + 1;
-        iter_z_ = iter_z_ + 1;
-        iter_intensity_ = iter_intensity_ + 1;
+        ++iter_x_;
+        ++iter_y_;
+        ++iter_z_;
+        ++iter_intensity_;
 
 #ifdef POINT_TYPE_XYZIRT
         *iter_ring_ = point.ring;
         *iter_timestamp_ = point.timestamp;
 
-        iter_ring_ = iter_ring_ + 1;
-        iter_timestamp_ = iter_timestamp_ + 1;
+        ++iter_ring_;
+        ++iter_timestamp_;
 #endif
       }
     }
@@ -284,17 +327,17 @@ inline sensor_msgs::msg::PointCloud2 toRosMsg(const LidarPointCloudMsg& rs_msg, 
       *iter_z_ = point.z;
       *iter_intensity_ = point.intensity;
 
-      iter_x_ = iter_x_ + 1;
-      iter_y_ = iter_y_ + 1;
-      iter_z_ = iter_z_ + 1;
-      iter_intensity_ = iter_intensity_ + 1;
+      ++iter_x_;
+      ++iter_y_;
+      ++iter_z_;
+      ++iter_intensity_;
 
 #ifdef POINT_TYPE_XYZIRT
       *iter_ring_ = point.ring;
       *iter_timestamp_ = point.timestamp;
 
-      iter_ring_ = iter_ring_ + 1;
-      iter_timestamp_ = iter_timestamp_ + 1;
+      ++iter_ring_;
+      ++iter_timestamp_;
 #endif
     }
   }

@@ -38,6 +38,10 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <rs_driver/msg/packet.hpp>
 
+#if ROS_FOUND
+  #include <ros/ros.h>
+#endif
+
 namespace robosense
 {
 namespace lidar
@@ -49,6 +53,9 @@ public:
   typedef std::shared_ptr<DestinationPointCloud> Ptr;
 
   virtual void init(const YAML::Node& config){}
+  #if ROS_FOUND
+  virtual void init(const YAML::Node& config, ros::NodeHandle& pnh){}
+  #endif
   virtual void start() {}
   virtual void stop() {}
   virtual void sendPointCloud(const LidarPointCloudMsg& msg) = 0;
