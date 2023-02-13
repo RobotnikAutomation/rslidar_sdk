@@ -136,7 +136,7 @@ void NodeManager::init(const YAML::Node& config)
   }
 }
 #if ROS_FOUND
-void NodeManager::init(const YAML::Node& config, ros::NodeHandle& phn)
+void NodeManager::init(const YAML::Node& config, ros::NodeHandle& phn, bool nodelet)
 {
   YAML::Node common_config = yamlSubNodeAbort(config, "common");
 
@@ -224,7 +224,7 @@ void NodeManager::init(const YAML::Node& config, ros::NodeHandle& phn)
       RS_DEBUG << "------------------------------------------------------" << RS_REND;
 
       std::shared_ptr<DestinationPointCloud> dst = std::make_shared<DestinationPointCloudRos>();
-      dst->init(lidar_config[i], phn);
+      dst->init(lidar_config[i], phn, nodelet);
       source->regPointCloudCallback(dst);
     }
 

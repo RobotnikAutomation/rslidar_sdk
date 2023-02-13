@@ -50,7 +50,7 @@ public:
 
   void init(const YAML::Node& config);
   #ifdef ROS_FOUND
-  void init(const YAML::Node& config, ros::NodeHandle& pnh);
+  void init(const YAML::Node& config, ros::NodeHandle& pnh, bool nodelet);
 #endif
   void start();
   void stop();

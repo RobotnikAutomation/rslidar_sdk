@@ -213,9 +213,7 @@ void SourceDriver::processPointCloud()
     {
       continue;
     }
-
     sendPointCloud(msg);
-
     free_point_cloud_queue_.push(msg);
   }
 }

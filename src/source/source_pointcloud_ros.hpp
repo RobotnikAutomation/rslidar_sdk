@@ -162,15 +162,15 @@ class DestinationPointCloudRos : public DestinationPointCloud
 public:
 
   virtual void init(const YAML::Node& config);
-  virtual void init(const YAML::Node& config, ros::NodeHandle& pnh);
+  virtual void init(const YAML::Node& config, ros::NodeHandle& pnh, bool nodelet);
   virtual void sendPointCloud(const LidarPointCloudMsg& msg);
   virtual ~DestinationPointCloudRos() = default;
-
 private:
   std::shared_ptr<ros::NodeHandle> nh_;
   ros::Publisher pub_;
   std::string frame_id_;
   bool send_by_rows_;
+  bool nodelet_{false};
 };
 
 inline void DestinationPointCloudRos::init(const YAML::Node& config)
@@ -194,8 +194,9 @@ inline void DestinationPointCloudRos::init(const YAML::Node& config)
   pub_ = nh_->advertise<sensor_msgs::PointCloud2>(ros_send_topic, 10);
 }
 
-inline void DestinationPointCloudRos::init(const YAML::Node& config, ros::NodeHandle& pnh)
+inline void DestinationPointCloudRos::init(const YAML::Node& config, ros::NodeHandle& pnh, bool nodelet)
 {
+  nodelet_ = nodelet;
   yamlRead<bool>(config["ros"], 
       "ros_send_by_rows", send_by_rows_, false);
 
@@ -216,8 +217,16 @@ inline void DestinationPointCloudRos::init(const YAML::Node& config, ros::NodeHa
 
 inline void DestinationPointCloudRos::sendPointCloud(const LidarPointCloudMsg& msg)
 {
-  pub_.publish(toRosMsg(msg, frame_id_, send_by_rows_));
+  if(!nodelet_)
+  {
+    pub_.publish(toRosMsg(msg, frame_id_, send_by_rows_));
+    return;
+  }
+  sensor_msgs::PointCloud2Ptr message(new sensor_msgs::PointCloud2(toRosMsg(msg, frame_id_, send_by_rows_)));
+  pub_.publish(message);
 }
+
+
 
 }  // namespace lidar
 }  // namespace robosense

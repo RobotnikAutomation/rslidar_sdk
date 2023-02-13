@@ -3,11 +3,14 @@
   <arg if="$(arg debug)" name="launch_prefix" default="gdb -ex run --args"/>
   <arg unless="$(arg debug)" name="launch_prefix" default=""/>
 
-  <!-- <arg name="rs_lidar_config_path" default="$(find rslidar_sdk)/config/config.yaml"/> -->
+  <arg name="rs_lidar_config_path" default="$(find rslidar_sdk)/config/config.yaml"/>
   <arg name="frame_id" default="$(arg prefix)3d_laser_link" />
   <arg name="msop_port" default="6699" />
   <arg name="difop_port" default="7788" />
   <arg name="lidar_type" default="RSBP"/>
+  <arg name="node_name" default="lidar_3d"/>
+  <arg name="scan_topic" default="points_raw"/>
+
   <node pkg="nodelet" type="nodelet" name="standalone_nodelet" args="manager" output="screen"  launch-prefix="$(arg launch_prefix)">
   </node>
   <node pkg="nodelet" type="nodelet" name="rslidarNodelet" args="load rslidar_sdk/rslidarNodelet standalone_nodelet" output="screen">
@@ -15,7 +18,10 @@
     <param name="msop_port" value="$(arg msop_port)"/>
     <param name="difop_port" value="$(arg difop_port)"/>
     <param name="frame_id" value="$(arg frame_id)"/>
-    <param name="rs_lidar_config_path" value=""/>
+    <param name="rs_lidar_config_path" value="$(arg rs_lidar_config_path)"/>
+    <param name="node_name" value="$(arg node_name)"/>
+    <param name="scan_topic" value="$(arg scan_topic)"/>
+    <remap from="/rslidar_points" to="$(arg node_name)/$(arg scan_topic)"/>
   </node>
   <!-- rviz -->
   <node pkg="rviz" name="rviz" type="rviz" args="-d $(find rslidar_sdk)/rviz/rviz.rviz" />

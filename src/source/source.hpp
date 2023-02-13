@@ -54,7 +54,7 @@ public:
 
   virtual void init(const YAML::Node& config){}
   #if ROS_FOUND
-  virtual void init(const YAML::Node& config, ros::NodeHandle& pnh){}
+  virtual void init(const YAML::Node& config, ros::NodeHandle& pnh, bool nodelet){}
   #endif
   virtual void start() {}
   virtual void stop() {}

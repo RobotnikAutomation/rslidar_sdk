@@ -54,7 +54,7 @@ private:
             config["lidar"][0]["ros"]["ros_frame_id"] = ros_frame_id;
 
         demo_ptr = std::make_shared<robosense::lidar::NodeManager>();
-        demo_ptr->init(config, nhp_);
+        demo_ptr->init(config, nhp_, true);
         demo_ptr->start();
     }
     std::shared_ptr<robosense::lidar::NodeManager> demo_ptr;
