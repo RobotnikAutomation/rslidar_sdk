@@ -23,6 +23,4 @@
     <param name="scan_topic" value="$(arg scan_topic)"/>
     <remap from="/rslidar_points" to="$(arg node_name)/$(arg scan_topic)"/>
   </node>
-  <!-- rviz -->
-  <node pkg="rviz" name="rviz" type="rviz" args="-d $(find rslidar_sdk)/rviz/rviz.rviz" />
 </launch>
