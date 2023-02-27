@@ -3,6 +3,7 @@
   <arg if="$(arg debug)" name="launch_prefix" default="gdb -ex run --args"/>
   <arg unless="$(arg debug)" name="launch_prefix" default=""/>
 
+  <arg name="prefix" default="robot_"/>	
   <arg name="rs_lidar_config_path" default="$(find rslidar_sdk)/config/config.yaml"/>
   <arg name="frame_id" default="$(arg prefix)3d_laser_link" />
   <arg name="msop_port" default="6699" />
