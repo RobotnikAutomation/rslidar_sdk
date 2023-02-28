@@ -154,6 +154,19 @@ source devel/setup.bash
 roslaunch rslidar_sdk start.launch
 ```
 
+(Optional) There is a ```nodelet``` version that allows the user to transport the poincloud messages faster. For the nodelet to work, all the nodes that require poincloud data must be launched under the same nodelet manager. To achieve this, the nodelet_name argument must be the same for all the nodelets that are launched. 
+
+```
+ <node pkg="nodelet" type="nodelet" name="exampleNodelet" args="load rslidar_sdk/rslidarNodelet $(arg nodelet_name)" output="screen">
+```
+Then, the rslidar nodelet can be launched with the following command. This must be launched for the other nodelets to work. 
+
+```sh
+roslaunch rslidar_sdk nodelet_start.launch
+```
+
+
+
 ### 4.3 Compile with ROS2 colcon
 
 (1) On top of the file *CMakeLists.txt*，set the variable **COMPILE_METHOD** to **COLCON**.
