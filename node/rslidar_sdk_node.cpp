@@ -86,7 +86,9 @@ int main(int argc, char** argv)
    config_path = (std::string)PROJECT_PATH;
 #endif
 
-   config_path += "/config/config.yaml";
+   //config_path += "/config/config.yaml";
+   std::string rslidar_config_file = (std::string)PROJECT_PATH + "/config/config.yaml";
+   ros::param::get("rslidar_config_file", rslidar_config_file);
 
 #ifdef ROS_FOUND
   ros::NodeHandle priv_hh("~");
@@ -107,7 +109,8 @@ int main(int argc, char** argv)
   YAML::Node config;
   try
   {
-    config = YAML::LoadFile(config_path);
+    //config = YAML::LoadFile(config_path);
+    config = YAML::LoadFile(rslidar_config_file);
     RS_INFO << "--------------------------------------------------------" << RS_REND;
     RS_INFO << "Config loaded from PATH:" << RS_REND;
     RS_INFO << config_path << RS_REND;
@@ -118,6 +121,23 @@ int main(int argc, char** argv)
     RS_ERROR << "The format of config file " << config_path << " is wrong. Please check (e.g. indentation)." << RS_REND;
     return -1;
   }
+  
+  std::string lidar_type = "";
+  priv_hh.param("lidar_type", lidar_type, lidar_type);
+  if (lidar_type != "")
+    config["lidar"][0]["driver"]["lidar_type"] = lidar_type;
+  int msop_port = -1;
+  priv_hh.param("msop_port", msop_port, msop_port);
+  if (msop_port != -1)
+    config["lidar"][0]["driver"]["msop_port"] = msop_port;
+  int difop_port = -1;
+  priv_hh.param("difop_port", difop_port, difop_port);
+  if (difop_port != -1)
+    config["lidar"][0]["driver"]["difop_port"] = difop_port;
+  std::string ros_frame_id = "";
+  priv_hh.param("frame_id", ros_frame_id, ros_frame_id);
+  if (ros_frame_id != "")
+    config["lidar"][0]["ros"]["ros_frame_id"] = ros_frame_id;
 
   std::shared_ptr<NodeManager> demo_ptr = std::make_shared<NodeManager>();
   demo_ptr->init(config);
